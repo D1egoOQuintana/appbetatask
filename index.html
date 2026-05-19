@@ -1163,6 +1163,7 @@ function renderContent(){
 
 function renderForm(tk){
   const future=addDaysISO(view,30);
+  if(!Array.isArray(S.areas)||!S.areas.length) S.areas=[...AREAS];
   return `
     <div class="add-form" id="form-${tk}">
       <div class="field">
@@ -1505,7 +1506,8 @@ document.getElementById('fileInput').addEventListener('change',function(e){
         desc:`Se importarán ${taskCount} tarea${taskCount===1?'':'s'}. Esto reemplazará todos tus datos actuales.`,
         okText:'importar',
         onOk:()=>{
-          S=Object.assign({tasks:[],completions:{},theme:S.theme,introSeen:true},data);
+          S=Object.assign({tasks:[],completions:{},areas:[...AREAS],theme:S.theme,introSeen:true},data);
+          if(!Array.isArray(S.areas)||!S.areas.length) S.areas=[...AREAS];
           save(); applyTheme(); closeModal(); refresh();
           toast('Datos restaurados correctamente');
         }
