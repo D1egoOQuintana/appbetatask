@@ -240,7 +240,41 @@ input,select,textarea{font-family:inherit}
 .sync-input{font-family:var(--f-mono);font-size:11px;background:var(--surface);border:1px solid var(--border-strong);border-radius:99px;padding:7px 14px;color:var(--text);outline:none;width:200px;letter-spacing:.04em;transition:border var(--t)}
 .sync-input:focus{border-color:var(--text-muted)}
 .sync-input::placeholder{color:var(--text-dim)}
-.footer-note{padding:14px 0 40px;font-family:var(--f-mono);font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.05em}
+.footer-note{padding:14px 0 40px;font-family:var(--f-mono);font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:10px}
+.footer-help{font-family:var(--f-mono);font-size:10px;color:var(--text-muted);letter-spacing:.05em;border-bottom:1px solid var(--border);padding-bottom:1px;transition:color var(--t),border-color var(--t)}
+.footer-help:hover{color:var(--text-soft);border-color:var(--text-soft)}
+/* ═══ Help panel ════════════════════════════════════════ */
+.help-panel{position:fixed;inset:0;background:var(--bg);z-index:900;display:none;flex-direction:column;overflow:hidden}
+.help-panel.open{display:flex;animation:slideUp .4s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.help-panel.fade-out{animation:slideDown .35s cubic-bezier(.4,0,1,1) forwards}
+@keyframes slideDown{from{transform:translateY(0)}to{transform:translateY(100%)}}
+.help-hdr{padding:max(24px,env(safe-area-inset-top,24px)) 24px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border)}
+.help-hdr-lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+.help-x{font-size:20px;line-height:1;color:var(--text-muted);padding:6px 10px;border-radius:var(--r-sm);transition:all var(--t)}
+.help-x:hover{color:var(--text);background:var(--surface)}
+.help-body{padding:32px 24px max(48px,env(safe-area-inset-bottom,48px));overflow-y:auto;flex:1;max-width:560px;margin:0 auto;width:100%}
+.help-sec{margin-bottom:44px}
+.help-tag2{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:10px}
+.help-h2{font-size:26px;font-weight:500;letter-spacing:-.03em;color:var(--text);margin-bottom:16px;line-height:1.1}
+.help-p2{font-size:15px;line-height:1.75;color:var(--text-soft);margin-bottom:14px}
+.help-p2 strong{color:var(--text);font-weight:500}
+.help-p2 em{color:var(--text-muted);font-style:normal;font-family:var(--f-mono);font-size:13px}
+.help-box2{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin:18px 0}
+.help-box2 p{font-size:14px;line-height:1.7;color:var(--text-soft);margin-bottom:10px}
+.help-box2 p:last-child{margin-bottom:0}
+.help-box2 p strong{color:var(--text);font-weight:500}
+.help-stp{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
+.help-stp-n{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--bg);background:var(--text);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
+.help-stp-t{font-size:14px;line-height:1.7;color:var(--text-soft)}
+.help-stp-t strong{color:var(--text);font-weight:500}
+.help-div2{height:1px;background:var(--border);margin:0 0 44px}
+.help-tip2{font-size:14px;line-height:1.65;color:var(--text-soft);padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:10px}
+.help-tip2 strong{color:var(--text);font-weight:500}
+.help-tier2{display:flex;gap:13px;align-items:flex-start;margin-bottom:16px}
+.help-tier2-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.help-tier2-txt h4{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.help-tier2-txt p{font-size:13.5px;line-height:1.65;color:var(--text-soft)}
 
 /* ═══ Modal ════════════════════════════════════════════ */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
@@ -301,6 +335,156 @@ input,select,textarea{font-family:inherit}
   </div>
 </div>
 
+<!-- ═══ Help panel ═══════════════════════════════════════ -->
+<div class="help-panel" id="helpPanel">
+  <div class="help-hdr">
+    <span class="help-hdr-lbl">manual de usuario</span>
+    <button class="help-x" onclick="closeHelp()">✕</button>
+  </div>
+  <div class="help-body">
+
+    <div class="help-sec">
+      <span class="help-tag2">bienvenida</span>
+      <h2 class="help-h2">Plan, en pocas palabras.</h2>
+      <p class="help-p2">Esta app existe porque las listas de tareas normalmente fallan. Escribís 20 cosas, terminás 3, y te vas a dormir sintiéndote mal. Plan te fuerza a elegir: ¿qué es lo que <strong>realmente</strong> tiene que pasar hoy?</p>
+      <p class="help-p2">Sin registro. Sin cuenta. Sin publicidad. Tus tareas viven en tu dispositivo y nadie más las ve.</p>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">cómo funciona</span>
+      <h2 class="help-h2">Tres niveles, no una lista infinita.</h2>
+      <p class="help-p2">Cada día podés agregar tareas en tres categorías. La idea es que al planificar ya estás tomando decisiones sobre qué importa de verdad.</p>
+      <div class="help-tier2">
+        <div class="help-tier2-dot" style="background:var(--red)"></div>
+        <div class="help-tier2-txt">
+          <h4>Inamovibles — máx. 3</h4>
+          <p>Lo que sí o sí tiene que pasar. Si al final del día solo hiciste estas tres cosas, el día fue un éxito. Reservalas para lo que tiene consecuencias reales si no lo hacés.</p>
+        </div>
+      </div>
+      <div class="help-tier2">
+        <div class="help-tier2-dot" style="background:var(--amber)"></div>
+        <div class="help-tier2-txt">
+          <h4>Deseables — máx. 4</h4>
+          <p>Importantes pero que pueden esperar un día más sin drama. Las ponés en el plan pero no te castigás si no llegan.</p>
+        </div>
+      </div>
+      <div class="help-tier2">
+        <div class="help-tier2-dot" style="background:var(--green)"></div>
+        <div class="help-tier2-txt">
+          <h4>Bonus — sin límite fijo</h4>
+          <p>Para cuando ya volaste con las anteriores y todavía te queda energía. Si no las hacés, no pasa nada.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">pregunta frecuente</span>
+      <h2 class="help-h2">¿Por qué no aparecen mis tareas en el otro dispositivo?</h2>
+      <p class="help-p2">La respuesta corta: <strong>tus tareas viven dentro del navegador de cada dispositivo</strong>, no en ningún servidor de internet.</p>
+      <div class="help-box2">
+        <p>Imaginalo así: cada dispositivo es una casa diferente. Plan escribe tus tareas en un cuaderno guardado en esa casa. Si abrís Plan en otra casa (otro celular, otra compu), ese cuaderno no está ahí.</p>
+        <p>Esto tiene una gran ventaja: <strong>nadie puede ver tus datos</strong>. No hay empresa que los guarde, no hay servidor que pueda caerse. La contrapartida es que no se comparten solos entre dispositivos.</p>
+      </div>
+      <p class="help-p2">Para solucionar esto tenés dos opciones: el <strong>backup manual</strong> (para no perder nada si algo sale mal) o el <strong>sync automático</strong> (para tener todo sincronizado entre dispositivos). Abajo te explico cada uno.</p>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">backup manual</span>
+      <h2 class="help-h2">El backup: tu seguro de vida.</h2>
+      <p class="help-p2">Hay situaciones donde podés perder tus datos sin querer. Por ejemplo:</p>
+      <div class="help-box2">
+        <p>· Limpiaste el historial o la caché del navegador.</p>
+        <p>· Cambiaste de dispositivo o compraste uno nuevo.</p>
+        <p>· El navegador se actualizó y borró datos locales.</p>
+        <p>· Usaste una configuración de privacidad que borra cookies y almacenamiento.</p>
+      </div>
+      <p class="help-p2">El backup es simple: exportás un archivo con todas tus tareas y lo guardás en un lugar seguro. Si algo sale mal, importás ese archivo y todo vuelve.</p>
+      <div class="help-stp">
+        <div class="help-stp-n">1</div>
+        <div class="help-stp-t">Bajá hasta el final de la app y tocá <strong>↑ exportar</strong>. Se descarga un archivo <em>.json</em> en tu dispositivo.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">2</div>
+        <div class="help-stp-t">Guardá ese archivo donde no se pierda: <strong>Google Drive, tu correo, WhatsApp a vos mismo, Dropbox</strong> — cualquier cosa sirve.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">3</div>
+        <div class="help-stp-t">Si perdés los datos: <strong>↓ importar</strong> → seleccionás ese archivo → tus tareas vuelven exactamente como estaban.</div>
+      </div>
+      <div class="help-tip2">💡 <strong>Recomendación:</strong> hacé un backup una vez por semana. No tarda ni 10 segundos y te ahorra un disgusto enorme si algo sale mal.</div>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">sync automático</span>
+      <h2 class="help-h2">El sync: el mismo cuaderno en todos lados.</h2>
+      <p class="help-p2">Si usás la app en la compu y también en el celular, el sync es para vos. Una vez configurado, cada tarea que crees en un dispositivo aparece automáticamente en todos los demás. Sin hacer nada extra.</p>
+      <div class="help-box2">
+        <p>¿Cómo funciona? Cuando activás el sync, tus tareas se guardan en un "casillero" privado en internet, además de en tu dispositivo. Cualquier dispositivo que tenga el código de ese casillero puede leer y escribir en él. El sync ocurre solo, en segundo plano.</p>
+      </div>
+      <p class="help-p2"><strong>Activar por primera vez (dispositivo principal):</strong></p>
+      <div class="help-stp">
+        <div class="help-stp-n">1</div>
+        <div class="help-stp-t">Bajá hasta el final de la app → tocá <strong>✦ activar sync</strong>.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">2</div>
+        <div class="help-stp-t">Se genera un <strong>código único</strong>. Ese código es la llave de tu casillero. Copialo y mandátelo a vos mismo por WhatsApp, mail o notas.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">3</div>
+        <div class="help-stp-t">En el otro dispositivo: bajá hasta el final → <strong>tengo un código</strong> → pegalo → <strong>conectar</strong>. Las tareas aparecen al instante.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">4</div>
+        <div class="help-stp-t">A partir de ahora es todo automático. Podés conectar tantos dispositivos como quieras con el mismo código.</div>
+      </div>
+      <div class="help-tip2">⚠️ <strong>Importante:</strong> guardá el código en algún lugar seguro. Si lo perdés y desconectás el sync, no podrás volver a conectar los mismos datos desde otro dispositivo.</div>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">personalización</span>
+      <h2 class="help-h2">Áreas: etiquetas para tus tareas.</h2>
+      <p class="help-p2">Cada tarea tiene un área (Trabajo, Salud, Proyectos…) que sirve para saber de un vistazo de qué va. Si las que vienen no te sirven, podés crear las tuyas:</p>
+      <div class="help-stp">
+        <div class="help-stp-n">1</div>
+        <div class="help-stp-t">Al agregar una tarea, tocá el selector de <strong>Área</strong>.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">2</div>
+        <div class="help-stp-t">Bajá hasta <strong>+ nueva área</strong> y seleccionala.</div>
+      </div>
+      <div class="help-stp">
+        <div class="help-stp-n">3</div>
+        <div class="help-stp-t">Escribí el nombre y presioná <strong>Enter</strong> o "añadir". Esa área queda guardada para siempre y aparece en todos los formularios desde ese momento.</div>
+      </div>
+    </div>
+
+    <div class="help-div2"></div>
+
+    <div class="help-sec">
+      <span class="help-tag2">tips y atajos</span>
+      <h2 class="help-h2">Cosas útiles que quizás no sabías.</h2>
+      <div class="help-tip2"><strong>Tareas repetidas —</strong> si tenés algo que hacés todos los días o ciertos días de la semana, usá "Programar rango" al crear la tarea. Se agrega sola en los días que elijas, semana tras semana, sin que tengas que escribirla de nuevo.</div>
+      <div class="help-tip2"><strong>El anillo de progreso —</strong> el círculo en la esquina superior derecha muestra qué porcentaje del día actual ya completaste. Tocar las tareas como "hecho" lo va llenando.</div>
+      <div class="help-tip2"><strong>Navegar entre semanas —</strong> usá las flechas ← → arriba a la derecha para ir a semanas anteriores o futuras. El botón "hoy" te trae de vuelta al presente.</div>
+      <div class="help-tip2"><strong>Cerrar rápido —</strong> la tecla <strong>Escape</strong> cierra cualquier formulario, confirmación o ventana que esté abierta.</div>
+      <div class="help-tip2"><strong>Modo oscuro / claro —</strong> el ícono en la esquina superior derecha cambia el tema. Tu preferencia se guarda automáticamente.</div>
+      <div class="help-tip2"><strong>¿Borré una tarea sin querer? —</strong> lamentablemente no hay deshacer por ahora. Razón de más para hacer backup seguido.</div>
+    </div>
+
+  </div>
+</div>
+
 <!-- ═══ Main App ═════════════════════════════════════════ -->
 <div class="container" id="app" style="display:none">
   <div class="header">
@@ -348,7 +532,7 @@ input,select,textarea{font-family:inherit}
     </div>
   </div>
   <div id="syncBar" class="sync-bar"></div>
-  <div class="footer-note">tu app · tu dispositivo · tus datos</div>
+  <div class="footer-note"><span>tu app · tu dispositivo · tus datos</span><button class="footer-help" onclick="openHelp()">manual →</button></div>
 </div>
 
 <!-- ═══ Modal ═══════════════════════════════════════════ -->
@@ -1177,6 +1361,18 @@ function syncDisconnect(){
 setInterval(()=>{if(!document.hidden)syncPull();},30000);
 window.addEventListener('focus',syncPull);
 
+/* ═══ Help panel ════════════════════════════════════════ */
+function openHelp(){
+  const p=document.getElementById('helpPanel');
+  p.classList.remove('fade-out');
+  p.classList.add('open');
+}
+function closeHelp(){
+  const p=document.getElementById('helpPanel');
+  p.classList.add('fade-out');
+  setTimeout(()=>p.classList.remove('open','fade-out'),380);
+}
+
 /* ═══ Init ═════════════════════════════════════════════ */
 applyTheme();
 if(!S.introSeen){
@@ -1198,6 +1394,7 @@ document.addEventListener('keydown',e=>{
     });
     if(document.getElementById('modal').classList.contains('show')) closeModal();
     if(document.getElementById('syncScreen').style.display!=='none') dismissSyncScreen();
+    if(document.getElementById('helpPanel').classList.contains('open')) closeHelp();
   }
 });
 </script>
