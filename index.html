@@ -1093,16 +1093,12 @@ async function syncPull(){
     const remoteTs=data.lastModified||0;
     const localTs=S.lastModified||0;
     if(remoteTs>localTs+500){
-      const appVisible=document.getElementById('app').style.display!=='none';
-      if(appVisible){
-        showSyncScreen(data);
-      }else{
-        S.tasks=data.tasks;
-        S.completions=data.completions||{};
-        S.lastModified=remoteTs;
-        localStorage.setItem(SK,JSON.stringify(S));
-        refresh();
-      }
+      S.tasks=data.tasks;
+      S.completions=data.completions||{};
+      S.lastModified=remoteTs;
+      localStorage.setItem(SK,JSON.stringify(S));
+      refresh();
+      if(document.getElementById('app').style.display!=='none') toast('Sync: datos actualizados');
     }
     syncSetStatus('on');
   }catch(e){}
