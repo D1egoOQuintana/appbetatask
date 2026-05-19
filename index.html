@@ -1476,7 +1476,7 @@ function saveTask(tk){
 
 /* ═══ Backup ═══════════════════════════════════════════ */
 function doExport(){
-  const data=JSON.stringify({tasks:S.tasks,completions:S.completions,theme:S.theme,introSeen:S.introSeen},null,2);
+  const data=JSON.stringify({tasks:S.tasks,completions:S.completions,areas:S.areas,theme:S.theme,introSeen:S.introSeen},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
