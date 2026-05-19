@@ -179,6 +179,10 @@ input,select,textarea{font-family:inherit}
 .input,.select{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-size:14px;padding:11px 13px;outline:none;transition:all var(--t);width:100%;font-family:var(--f-sans)}
 .input:focus,.select:focus{border-color:var(--text-soft);background:var(--surface)}
 .input::placeholder{color:var(--text-dim)}
+.new-area-row{display:flex;gap:8px;margin-top:8px}
+.new-area-row .input{flex:1;font-size:13px;padding:9px 12px}
+.new-area-add{font-family:var(--f-mono);font-size:11px;padding:9px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:transparent;color:var(--text-soft);white-space:nowrap;transition:all var(--t)}
+.new-area-add:hover{color:var(--text);border-color:var(--border-strong);background:var(--surface)}
 .select{cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23737373' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 
 .sched-toggle{display:flex;gap:6px;padding:4px;background:var(--surface-2);border-radius:var(--r-sm)}
@@ -437,13 +441,14 @@ function load(){
       return {
         tasks:p.tasks||[],
         completions:p.completions||{},
+        areas:p.areas||[...AREAS],
         theme:p.theme||defaultTheme(),
         introSeen:!!p.introSeen,
         lastModified:p.lastModified||0
       };
     }
   }catch(e){}
-  return {tasks:[],completions:{},theme:defaultTheme(),introSeen:false};
+  return {tasks:[],completions:{},areas:[...AREAS],theme:defaultTheme(),introSeen:false};
 }
 function defaultTheme(){
   return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'dark';
@@ -679,7 +684,15 @@ function renderForm(tk){
       </div>
       <div class="field">
         <label class="field-label">Área</label>
-        <select class="select" id="sel-${tk}">${AREAS.map(a=>`<option>${a}</option>`).join('')}</select>
+        <select class="select" id="sel-${tk}" onchange="onAreaChange('${tk}')">
+          ${S.areas.map(a=>`<option>${a}</option>`).join('')}
+          <option value="__new__">+ nueva área</option>
+        </select>
+        <div class="new-area-row" id="new-area-row-${tk}" style="display:none">
+          <input class="input" id="new-area-inp-${tk}" placeholder="Nombre del área" maxlength="30"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();confirmNewArea('${tk}')}">
+          <button class="new-area-add" type="button" onclick="confirmNewArea('${tk}')">añadir</button>
+        </div>
       </div>
       <div class="field">
         <label class="field-label">Cuándo</label>
@@ -714,6 +727,33 @@ function renderForm(tk){
     </div>`;
 }
 
+function onAreaChange(tk){
+  const sel=document.getElementById('sel-'+tk);
+  const row=document.getElementById('new-area-row-'+tk);
+  if(sel.value==='__new__'){
+    row.style.display='flex';
+    document.getElementById('new-area-inp-'+tk).focus();
+  }else{
+    row.style.display='none';
+  }
+}
+function confirmNewArea(tk){
+  const inp=document.getElementById('new-area-inp-'+tk);
+  const name=(inp.value||'').trim();
+  if(!name)return;
+  const area=name.charAt(0).toUpperCase()+name.slice(1);
+  if(!S.areas.includes(area)){S.areas.push(area);save();}
+  const sel=document.getElementById('sel-'+tk);
+  sel.innerHTML=S.areas.map(a=>`<option${a===area?' selected':''}>${a}</option>`).join('')+
+    '<option value="__new__">+ nueva área</option>';
+  sel.value=area;
+  document.getElementById('new-area-row-'+tk).style.display='none';
+  inp.value='';
+}
+function buildAreaOptions(tk,selected){
+  return S.areas.map(a=>`<option${a===selected?' selected':''}>${a}</option>`).join('')+
+    '<option value="__new__">+ nueva área</option>';
+}
 function bindForm(tk){
   const inp=document.getElementById('inp-'+tk);
   if(inp) inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); saveTask(tk); } };
@@ -773,6 +813,7 @@ function openForm(tk){
     // Reset form
     document.getElementById('inp-'+tk).value='';
     document.getElementById('sel-'+tk).selectedIndex=0;
+    document.getElementById('new-area-row-'+tk).style.display='none';
     document.getElementById('start-'+tk).value=view;
     document.getElementById('end-'+tk).value=addDaysISO(view,30);
     document.querySelectorAll(`#dow-${tk} .dow-btn`).forEach(b=>b.classList.add('active'));
@@ -964,7 +1005,7 @@ let _syncTimer=null;
 let _syncBusy=false;
 
 function _syncPayload(){
-  return {tasks:S.tasks,completions:S.completions,lastModified:S.lastModified||Date.now()};
+  return {tasks:S.tasks,completions:S.completions,areas:S.areas,lastModified:S.lastModified||Date.now()};
 }
 
 function syncSetStatus(st){
@@ -1048,6 +1089,7 @@ async function syncConnect(id){
     if(!data||!Array.isArray(data.tasks))throw new Error();
     S.tasks=data.tasks;
     S.completions=data.completions||{};
+    S.areas=data.areas||[...AREAS];
     S.lastModified=data.lastModified||Date.now();
     localStorage.setItem(SK,JSON.stringify(S));
     SYNC_ID=id;
@@ -1095,6 +1137,7 @@ async function syncPull(){
     if(remoteTs>localTs+500){
       S.tasks=data.tasks;
       S.completions=data.completions||{};
+      if(data.areas) S.areas=data.areas;
       S.lastModified=remoteTs;
       localStorage.setItem(SK,JSON.stringify(S));
       refresh();
