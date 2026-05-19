@@ -282,6 +282,21 @@ input,select,textarea{font-family:inherit}
   </div>
 </div>
 
+<!-- ═══ Sync screen ══════════════════════════════════════ -->
+<div class="intro" id="syncScreen" style="display:none">
+  <div class="intro-content" id="syncScreenContent"></div>
+  <div class="intro-nav">
+    <div></div>
+    <div class="intro-actions">
+      <button class="intro-skip" onclick="dismissSyncScreen()">más tarde</button>
+      <button class="intro-next primary" onclick="applySyncScreen()">
+        <span>sincronizar</span>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7C2 4.24 4.24 2 7 2C8.57 2 9.98 2.72 10.93 3.85M12 7C12 9.76 9.76 12 7 12C5.43 12 4.02 11.28 3.07 10.15M11 1V4H8M3 10V13H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Main App ═════════════════════════════════════════ -->
 <div class="container" id="app" style="display:none">
   <div class="header">
@@ -372,15 +387,20 @@ const INTRO=[
     '<span class="dot-g">●</span>&nbsp;&nbsp;<span style="color:var(--text)">Bonus</span> — si sobra energía.',
   ]},
   {pretitle:'Sobre tus datos',title:'Todo vive aquí.',lines:[
-    'Esta app no usa servidores ni base de datos.',
     'Tus tareas se guardan en este dispositivo.',
-    '<span style="color:var(--text)">Y solo aquí.</span>'
+    'Sin servidores. <span style="color:var(--text)">Tus datos son tuyos.</span>',
+    '<span class="muted">Puedes activar sync para usarla en varios dispositivos.</span>'
   ]},
   {pretitle:'Importante',title:'Tienes que respaldar.',lines:[
     'Si limpias el navegador o cambias de equipo,',
     'los datos se pierden.',
     '<br><span style="color:var(--text)">Usa el botón <em style="font-style:normal;font-family:var(--f-mono);font-size:13px;background:var(--surface);padding:2px 7px;border-radius:6px;border:1px solid var(--border)">↑ exportar</em> cada semana.</span>',
     '<span class="muted">Guarda el archivo en Drive, mail, USB — donde quieras.</span>'
+  ]},
+  {pretitle:'Multi-dispositivo',title:'Sync disponible.',lines:[
+    'Usa la misma app en tu celular, tablet y PC.',
+    '<span style="color:var(--text)">Un código. Todos conectados.</span>',
+    '<span class="muted">Ve al final de la app → activar sync.</span>'
   ]},
   {pretitle:'',title:'Listo.',lines:['Empecemos.'],final:true}
 ];
@@ -486,6 +506,38 @@ function finishIntro(){
     refresh();
     scrollActive();
   },480);
+}
+
+/* ═══ Sync screen ══════════════════════════════════════ */
+let _pendingRemoteData=null;
+function showSyncScreen(data){
+  _pendingRemoteData=data;
+  const el=document.getElementById('syncScreenContent');
+  el.innerHTML=`
+    <div class="intro-pretitle">Sync</div>
+    <h1 class="intro-title">Hay cambios.</h1>
+    <p class="intro-line">Otro dispositivo guardó novedades</p>
+    <p class="intro-line">más recientes que las de este.</p>
+    <p class="intro-line muted">Sincronizar reemplaza tus datos locales.</p>`;
+  const sc=document.getElementById('syncScreen');
+  sc.style.display='flex';
+  sc.classList.remove('fade-out');
+}
+function applySyncScreen(){
+  if(!_pendingRemoteData){dismissSyncScreen();return;}
+  S.tasks=_pendingRemoteData.tasks;
+  S.completions=_pendingRemoteData.completions||{};
+  S.lastModified=_pendingRemoteData.lastModified;
+  localStorage.setItem(SK,JSON.stringify(S));
+  _pendingRemoteData=null;
+  dismissSyncScreen();
+  setTimeout(()=>{refresh();syncSetStatus('on');toast('Sincronizado ✓');},520);
+}
+function dismissSyncScreen(){
+  _pendingRemoteData=null;
+  const sc=document.getElementById('syncScreen');
+  sc.classList.add('fade-out');
+  setTimeout(()=>sc.style.display='none',500);
 }
 
 /* ═══ Task logic ═══════════════════════════════════════ */
@@ -1041,12 +1093,16 @@ async function syncPull(){
     const remoteTs=data.lastModified||0;
     const localTs=S.lastModified||0;
     if(remoteTs>localTs+500){
-      S.tasks=data.tasks;
-      S.completions=data.completions||{};
-      S.lastModified=remoteTs;
-      localStorage.setItem(SK,JSON.stringify(S));
-      refresh();
-      toast('Datos actualizados desde otro dispositivo');
+      const appVisible=document.getElementById('app').style.display!=='none';
+      if(appVisible){
+        showSyncScreen(data);
+      }else{
+        S.tasks=data.tasks;
+        S.completions=data.completions||{};
+        S.lastModified=remoteTs;
+        localStorage.setItem(SK,JSON.stringify(S));
+        refresh();
+      }
     }
     syncSetStatus('on');
   }catch(e){}
@@ -1102,6 +1158,7 @@ document.addEventListener('keydown',e=>{
       closeForm(tk);
     });
     if(document.getElementById('modal').classList.contains('show')) closeModal();
+    if(document.getElementById('syncScreen').style.display!=='none') dismissSyncScreen();
   }
 });
 </script>
