@@ -224,6 +224,18 @@ input,select,textarea{font-family:inherit}
 .bk-btn:hover{color:var(--text);border-color:var(--border-strong);background:var(--surface)}
 .bk-btn.ok{color:var(--green);border-color:var(--green-border);background:var(--green-bg)}
 .bk-btn.danger:hover{color:var(--red);border-color:var(--red-border);background:var(--red-bg)}
+.sync-bar{padding:0 0 4px;display:flex;flex-direction:column;gap:8px}
+.sync-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sync-lbl{font-family:var(--f-mono);font-size:11px;color:var(--text-muted);letter-spacing:.04em;display:flex;align-items:center;gap:7px}
+.sync-lbl.on::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.sync-lbl.busy::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--amber);animation:pulse .8s infinite}
+.sync-lbl.err::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-code{font-family:var(--f-mono);font-size:10px;color:var(--text-soft);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 10px;letter-spacing:.06em;cursor:pointer;user-select:all;word-break:break-all;max-width:180px}
+.sync-code:hover{border-color:var(--border-strong);color:var(--text)}
+.sync-input{font-family:var(--f-mono);font-size:11px;background:var(--surface);border:1px solid var(--border-strong);border-radius:99px;padding:7px 14px;color:var(--text);outline:none;width:200px;letter-spacing:.04em;transition:border var(--t)}
+.sync-input:focus{border-color:var(--text-muted)}
+.sync-input::placeholder{color:var(--text-dim)}
 .footer-note{padding:14px 0 40px;font-family:var(--f-mono);font-size:10px;color:var(--text-dim);text-align:center;letter-spacing:.05em}
 
 /* ═══ Modal ════════════════════════════════════════════ */
@@ -309,13 +321,14 @@ input,select,textarea{font-family:inherit}
   <div class="stats-grid" id="statsGrid"></div>
 
   <div class="backup-bar">
-    <span class="backup-lbl">datos · solo en este dispositivo</span>
+    <span class="backup-lbl">respaldo manual</span>
     <div class="backup-btns">
       <button class="bk-btn" onclick="doExport()" id="expBtn">↑ exportar</button>
       <button class="bk-btn" onclick="openImport()">↓ importar</button>
       <button class="bk-btn danger" onclick="confirmReset()">borrar todo</button>
     </div>
   </div>
+  <div id="syncBar" class="sync-bar"></div>
   <div class="footer-note">tu app · tu dispositivo · tus datos</div>
 </div>
 
@@ -405,7 +418,8 @@ function load(){
         tasks:p.tasks||[],
         completions:p.completions||{},
         theme:p.theme||defaultTheme(),
-        introSeen:!!p.introSeen
+        introSeen:!!p.introSeen,
+        lastModified:p.lastModified||0
       };
     }
   }catch(e){}
@@ -414,7 +428,11 @@ function load(){
 function defaultTheme(){
   return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'dark';
 }
-function save(){ try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){} }
+function save(){
+  S.lastModified=Date.now();
+  try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){}
+  if(SYNC_ID) syncPushDebounced();
+}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 /* ═══ Theme ════════════════════════════════════════════ */
@@ -886,6 +904,184 @@ function scrollActive(){
   },80);
 }
 
+/* ═══ Sync ═════════════════════════════════════════════ */
+const SYNC_KEY='plan_sync_id';
+const BLOB='https://jsonblob.com/api/jsonBlob';
+let SYNC_ID=localStorage.getItem(SYNC_KEY)||null;
+let _syncTimer=null;
+let _syncBusy=false;
+
+function _syncPayload(){
+  return {tasks:S.tasks,completions:S.completions,lastModified:S.lastModified||Date.now()};
+}
+
+function syncSetStatus(st){
+  const el=document.getElementById('syncStatus');
+  if(!el)return;
+  const map={on:'sincronizado',busy:'sincronizando…',err:'error de red — reintentando'};
+  el.textContent=map[st]||st;
+  el.className='sync-lbl '+(st==='on'?'on':st==='busy'?'busy':'err');
+}
+
+function renderSyncUI(){
+  const bar=document.getElementById('syncBar');
+  if(!bar)return;
+  if(SYNC_ID){
+    bar.innerHTML=
+      '<div class="sync-row">'+
+      '<span class="sync-lbl on" id="syncStatus">sincronizado</span>'+
+      '<code class="sync-code" id="syncCodeEl" title="clic para copiar" onclick="syncCopyCode()">'+SYNC_ID+'</code>'+
+      '<button class="bk-btn" onclick="syncCopyCode()">copiar código</button>'+
+      '<button class="bk-btn danger" onclick="syncDisconnect()">desconectar</button>'+
+      '</div>';
+  }else{
+    bar.innerHTML=
+      '<div class="sync-row">'+
+      '<span class="sync-lbl" id="syncStatus">○ sin sync entre dispositivos</span>'+
+      '<button class="bk-btn" onclick="syncCreate()">✦ crear código</button>'+
+      '<button class="bk-btn" onclick="syncEnterCode()">tengo un código</button>'+
+      '</div>';
+  }
+}
+
+function syncEnterCode(){
+  const bar=document.getElementById('syncBar');
+  bar.innerHTML=
+    '<div class="sync-row">'+
+    '<input class="sync-input" id="syncCodeInput" placeholder="pega tu código aquí" autocomplete="off" spellcheck="false">'+
+    '<button class="bk-btn" onclick="syncConnectFromInput()">conectar</button>'+
+    '<button class="bk-btn" onclick="renderSyncUI()">cancelar</button>'+
+    '</div>';
+  const inp=document.getElementById('syncCodeInput');
+  inp.focus();
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')syncConnectFromInput();});
+}
+
+function syncConnectFromInput(){
+  const id=(document.getElementById('syncCodeInput')?.value||'').trim();
+  if(!id){toast('Pega un código válido');return;}
+  syncConnect(id);
+}
+
+async function syncCreate(){
+  const bar=document.getElementById('syncBar');
+  bar.innerHTML='<div class="sync-row"><span class="sync-lbl busy" id="syncStatus">creando código…</span></div>';
+  try{
+    const r=await fetch(BLOB,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(_syncPayload())
+    });
+    if(!r.ok)throw new Error();
+    const loc=r.headers.get('Location')||'';
+    const id=loc.split('/').pop();
+    if(!id)throw new Error();
+    SYNC_ID=id;
+    localStorage.setItem(SYNC_KEY,SYNC_ID);
+    renderSyncUI();
+    toast('Sync activado — copia el código en tus otros dispositivos');
+  }catch(e){
+    renderSyncUI();
+    toast('No se pudo activar sync. Revisa tu conexión.');
+  }
+}
+
+async function syncConnect(id){
+  const bar=document.getElementById('syncBar');
+  bar.innerHTML='<div class="sync-row"><span class="sync-lbl busy" id="syncStatus">conectando…</span></div>';
+  try{
+    const r=await fetch(`${BLOB}/${id}`,{headers:{'Accept':'application/json'}});
+    if(!r.ok)throw new Error();
+    const data=await r.json();
+    if(!data||!Array.isArray(data.tasks))throw new Error();
+    S.tasks=data.tasks;
+    S.completions=data.completions||{};
+    S.lastModified=data.lastModified||Date.now();
+    localStorage.setItem(SK,JSON.stringify(S));
+    SYNC_ID=id;
+    localStorage.setItem(SYNC_KEY,SYNC_ID);
+    renderSyncUI();
+    refresh();
+    toast('Conectado — '+data.tasks.length+' tarea'+(data.tasks.length===1?'':'s')+' cargadas');
+  }catch(e){
+    renderSyncUI();
+    toast('Código no encontrado o inválido');
+  }
+}
+
+async function syncPush(){
+  if(!SYNC_ID||_syncBusy)return;
+  _syncBusy=true;
+  try{
+    const r=await fetch(`${BLOB}/${SYNC_ID}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(_syncPayload())
+    });
+    if(!r.ok)throw new Error();
+    syncSetStatus('on');
+  }catch(e){
+    syncSetStatus('err');
+  }finally{_syncBusy=false;}
+}
+
+function syncPushDebounced(){
+  syncSetStatus('busy');
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(syncPush,2000);
+}
+
+async function syncPull(){
+  if(!SYNC_ID)return;
+  try{
+    const r=await fetch(`${BLOB}/${SYNC_ID}`,{headers:{'Accept':'application/json'}});
+    if(!r.ok)return;
+    const data=await r.json();
+    if(!data||!Array.isArray(data.tasks))return;
+    const remoteTs=data.lastModified||0;
+    const localTs=S.lastModified||0;
+    if(remoteTs>localTs+500){
+      S.tasks=data.tasks;
+      S.completions=data.completions||{};
+      S.lastModified=remoteTs;
+      localStorage.setItem(SK,JSON.stringify(S));
+      refresh();
+      toast('Datos actualizados desde otro dispositivo');
+    }
+    syncSetStatus('on');
+  }catch(e){}
+}
+
+function syncCopyCode(){
+  if(!SYNC_ID)return;
+  navigator.clipboard.writeText(SYNC_ID)
+    .then(()=>toast('Código copiado al portapapeles'))
+    .catch(()=>{
+      const el=document.getElementById('syncCodeEl');
+      if(el){const r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+      toast('Selecciona y copia el código manualmente');
+    });
+}
+
+function syncDisconnect(){
+  showConfirm({
+    icon:'warn',
+    title:'Desconectar sync',
+    desc:'Tus datos locales se conservan. Solo se desactiva la sincronización automática.',
+    okText:'Desconectar',
+    onOk:()=>{
+      SYNC_ID=null;
+      localStorage.removeItem(SYNC_KEY);
+      closeModal();
+      renderSyncUI();
+      toast('Sync desactivado');
+    }
+  });
+}
+
+setInterval(()=>{if(!document.hidden)syncPull();},30000);
+window.addEventListener('focus',syncPull);
+
 /* ═══ Init ═════════════════════════════════════════════ */
 applyTheme();
 if(!S.introSeen){
@@ -895,6 +1091,8 @@ if(!S.introSeen){
   refresh();
   scrollActive();
 }
+renderSyncUI();
+if(SYNC_ID) syncPull();
 
 // Keyboard shortcuts
 document.addEventListener('keydown',e=>{
