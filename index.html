@@ -179,7 +179,12 @@ a{color:inherit;text-decoration:none}
 .section-heading .label{margin-bottom:0}
 .section-heading h2{font-family:var(--f-serif);font-style:italic;font-size:var(--fs-h2);font-weight:400;color:var(--text);letter-spacing:-.01em;line-height:1.15}
 
-.tier-section{display:flex;flex-direction:column;animation:rise .35s cubic-bezier(.16,1,.3,1) both;position:relative;z-index:1}
+.tier-section{display:flex;flex-direction:column;position:relative;z-index:1}
+#content.first-paint .tier-section{animation:rise .35s cubic-bezier(.16,1,.3,1) both}
+#content{transition:opacity .18s ease-out,transform .18s ease-out;will-change:opacity}
+#content.swap-out{opacity:0;transform:translateY(4px);transition-duration:.12s}
+.day-btn{transition:all var(--t),color .18s ease}
+.day-btn.active .day-num{transition:font-size .25s cubic-bezier(.16,1,.3,1),color .18s ease}
 .tier-section:has(.area-dd.open){z-index:10}
 .tier-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--text);margin-bottom:4px}
 .tier-header.muted{border-bottom-color:var(--border-strong)}
@@ -320,11 +325,12 @@ a{color:inherit;text-decoration:none}
 .data-section.open .data-panel{max-height:880px;opacity:1;padding:8px 0 32px}
 
 .data-grid{display:grid;grid-template-columns:1fr;gap:0;border-top:var(--hairline) solid var(--border)}
-@media (min-width:880px){.data-grid{grid-template-columns:1fr 1fr;gap:0}.data-card+.data-card{border-left:var(--hairline) solid var(--border)}}
+@media (min-width:880px){.data-grid{grid-template-columns:1fr 1fr 1fr;gap:0}.data-card+.data-card{border-left:var(--hairline) solid var(--border)}}
 .data-card{padding:32px 24px 28px;border-bottom:var(--hairline) solid var(--border);display:flex;flex-direction:column;gap:14px;position:relative;opacity:0;transform:translateY(12px);transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1)}
 .data-section.open .data-card{opacity:1;transform:translateY(0)}
 .data-section.open .data-card:nth-child(1){transition-delay:.15s}
-.data-section.open .data-card:nth-child(2){transition-delay:.25s}
+.data-section.open .data-card:nth-child(2){transition-delay:.22s}
+.data-section.open .data-card:nth-child(3){transition-delay:.29s}
 @media (min-width:880px){.data-card{padding:40px 40px 36px}}
 .data-card{transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1),background .12s ease-out}
 .data-card:hover{background:var(--surface-2)}
@@ -453,6 +459,41 @@ a{color:inherit;text-decoration:none}
 .modal-confirm-field .field-label b{color:var(--red);font-weight:600;letter-spacing:.14em}
 .modal-confirm-field input{background:transparent;border:none;border-bottom:1px solid var(--border-hairline);color:var(--text);font-size:var(--fs-body-lg);padding:8px 0;outline:none;width:100%;font-family:var(--f-mono);letter-spacing:.06em;transition:border-color var(--t)}
 .modal-confirm-field input:focus{border-bottom-color:var(--red)}
+/* ═══ Delete options modal ═══ */
+.del-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.del-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border:var(--hairline) solid var(--border);border-radius:var(--r-lg);text-align:left;width:100%;cursor:pointer;background:transparent;transition:border-color var(--t),background var(--t)}
+.del-opt:hover{border-color:var(--border-strong);background:var(--surface-hover)}
+.del-opt.danger:hover{border-color:var(--red-border);background:var(--red-bg)}
+.del-opt-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.del-opt-body{display:flex;flex-direction:column;gap:2px}
+.del-opt-title{font-family:var(--f-sans);font-size:var(--fs-body);color:var(--text);font-weight:500}
+.del-opt.danger .del-opt-title{color:var(--red)}
+.del-opt-sub{font-family:var(--f-mono);font-size:var(--fs-micro);color:var(--text-muted);letter-spacing:.04em}
+.del-range-inputs{display:none;flex-direction:column;gap:12px;padding:14px 16px;background:var(--surface-2);border-radius:var(--r);margin-top:-4px;border:var(--hairline) solid var(--border)}
+.del-range-inputs.show{display:flex;animation:riseSm .3s cubic-bezier(.16,1,.3,1)}
+.del-range-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.del-range-row label{font-family:var(--f-mono);font-size:var(--fs-micro);letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);min-width:40px}
+.del-range-row input[type=date]{background:transparent;border:none;border-bottom:1px solid var(--border-hairline);color:var(--text);padding:4px 0;font-size:var(--fs-small);font-family:var(--f-mono);outline:none;flex:1;min-width:110px;transition:border-color var(--t);color-scheme:light dark}
+.del-range-row input[type=date]:focus{border-bottom-color:var(--text)}
+/* ═══ Limits configuration card ═══ */
+.limits-grid{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.limit-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 0;border-bottom:var(--hairline) solid var(--border)}
+.limit-row:last-child{border-bottom:none}
+.limit-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.limit-dot.r{background:var(--red)}
+.limit-dot.y{background:var(--amber)}
+.limit-dot.g{background:var(--green)}
+.limit-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.limit-name{font-family:var(--f-sans);font-size:var(--fs-body);color:var(--text);font-weight:500}
+.limit-hint{font-family:var(--f-mono);font-size:var(--fs-micro);color:var(--text-muted);letter-spacing:.06em}
+.limit-stepper{display:flex;align-items:center;gap:4px;background:var(--surface-2);border:var(--hairline) solid var(--border);border-radius:99px;padding:3px}
+.limit-stepper:hover{border-color:var(--border-strong)}
+.lim-btn{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-soft);font-family:var(--f-mono);font-size:14px;font-weight:500;background:transparent;transition:all var(--t);cursor:pointer}
+.lim-btn:hover:not(:disabled){background:var(--bg);color:var(--text)}
+.lim-btn:disabled{opacity:.3;cursor:not-allowed}
+.lim-val{font-family:var(--f-mono);font-size:var(--fs-body);font-weight:500;color:var(--text);min-width:22px;text-align:center;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.lim-val.unlim{font-family:var(--f-serif);font-style:italic;font-size:18px;color:var(--text-soft)}
+.limits-reset{align-self:flex-start;margin-top:6px}
 
 /* ═══ Task Detail Modal ═══════════════════════════════════ */
 .detail-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:250;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
@@ -590,21 +631,21 @@ a{color:inherit;text-decoration:none}
       <div class="help-tier2">
         <div class="help-tier2-dot" style="background:var(--red)"></div>
         <div class="help-tier2-txt">
-          <h4>Inamovibles — máx. 3</h4>
+          <h4 id="manualLimR">Inamovibles — máx. 3</h4>
           <p>Lo que sí o sí tiene que pasar. Si al final del día solo hiciste estas tres cosas, el día fue un éxito. Resérvalas para lo que tiene consecuencias reales si no lo haces.</p>
         </div>
       </div>
       <div class="help-tier2">
         <div class="help-tier2-dot" style="background:var(--amber)"></div>
         <div class="help-tier2-txt">
-          <h4>Deseables — máx. 4</h4>
+          <h4 id="manualLimY">Deseables — máx. 4</h4>
           <p>Importantes, pero que pueden esperar un día más sin problema. Las pones en el plan, pero no te castigues si no llegas a completarlas.</p>
         </div>
       </div>
       <div class="help-tier2">
         <div class="help-tier2-dot" style="background:var(--green)"></div>
         <div class="help-tier2-txt">
-          <h4>Bonus — sin límite fijo</h4>
+          <h4 id="manualLimG">Bonus — sin límite fijo</h4>
           <p>Para cuando ya terminaste las anteriores y todavía tienes energía. Si no las haces, no pasa nada.</p>
         </div>
       </div>
@@ -799,6 +840,16 @@ a{color:inherit;text-decoration:none}
         <div class="data-grid">
           <div class="data-card">
             <div class="data-card-head">
+              <span class="data-card-label">Límites por nivel</span>
+              <span class="data-card-hint">por día</span>
+            </div>
+            <p class="data-card-desc">Define cuántas tareas máximo aceptas en cada nivel cada día. Menos es mejor.</p>
+            <div class="limits-grid" id="limitsGrid"></div>
+            <button class="bk-btn limits-reset" onclick="resetLimits()">restaurar 3 · 4 · ∞</button>
+          </div>
+
+          <div class="data-card">
+            <div class="data-card-head">
               <span class="data-card-label">Respaldo manual</span>
               <span class="data-card-hint">.json local</span>
             </div>
@@ -848,6 +899,60 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- ═══ Delete options modal ════════════════════════════ -->
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <div class="modal-icon danger">
+      <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2.5C5 2 5.5 1.5 6 1.5H8C8.5 1.5 9 2 9 2.5V4M10 4V12C10 12.5 9.5 13 9 13H5C4.5 13 4 12.5 4 12V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="modal-title">¿Cómo eliminar?</div>
+    <div class="modal-desc">Esta tarea se repite en un rango. Elige qué días quieres eliminar.</div>
+    <div class="del-opts">
+      <button class="del-opt" onclick="_delDay()">
+        <span class="del-opt-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5V3.5M11 1.5V3.5M1.5 6H14.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="6" y="8.5" width="4" height="3" rx=".5" fill="currentColor" opacity=".4"/></svg>
+        </span>
+        <span class="del-opt-body">
+          <span class="del-opt-title">Solo este día</span>
+          <span class="del-opt-sub" id="delOptDayDate">—</span>
+        </span>
+      </button>
+      <button class="del-opt" id="delRangeBtn" onclick="_delRangeToggle()">
+        <span class="del-opt-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 1.5V3.5M11 1.5V3.5M1.5 6H14.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M4 9.5H12M4 12H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".4"/></svg>
+        </span>
+        <span class="del-opt-body">
+          <span class="del-opt-title">Un rango de fechas</span>
+          <span class="del-opt-sub">Selecciona desde / hasta</span>
+        </span>
+      </button>
+      <div class="del-range-inputs" id="delRangeInputs">
+        <div class="del-range-row">
+          <label>Desde</label>
+          <input type="date" id="delFrom">
+          <label>Hasta</label>
+          <input type="date" id="delTo">
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button class="btn-danger" onclick="_delRange()" style="font-size:var(--fs-micro)">Eliminar rango</button>
+        </div>
+      </div>
+      <button class="del-opt danger" onclick="_delAll()">
+        <span class="del-opt-icon">
+          <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 4H12M5 4V2.5C5 2 5.5 1.5 6 1.5H8C8.5 1.5 9 2 9 2.5V4M10 4V12C10 12.5 9.5 13 9 13H5C4.5 13 4 12.5 4 12V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="del-opt-body">
+          <span class="del-opt-title">Todo el bloque</span>
+          <span class="del-opt-sub" id="delOptAllRange">—</span>
+        </span>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeDelModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ Task detail modal ════════════════════════════════ -->
 <div class="detail-bg" id="detailBg" aria-hidden="true">
   <article class="detail-modal" role="dialog" aria-labelledby="detailTitle">
@@ -876,10 +981,20 @@ a{color:inherit;text-decoration:none}
 <script>
 /* ═══ Constants ════════════════════════════════════════ */
 const TIERS=[
-  {key:'r',label:'Inamovibles',desc:'Sí o sí — máx. 3',limit:3},
-  {key:'y',label:'Deseables',desc:'Si el día lo permite — máx. 4',limit:4},
+  {key:'r',label:'Inamovibles',desc:'Sí o sí',limit:3},
+  {key:'y',label:'Deseables',desc:'Si el día lo permite',limit:4},
   {key:'g',label:'Bonus',desc:'Si sobra energía',limit:5}
 ];
+const DEFAULT_LIMITS={r:3,y:4,g:0}; // 0 = sin límite
+const LIMIT_MIN=1, LIMIT_MAX=12;
+function getLimit(key){
+  const stored=S.limits&&S.limits[key];
+  return (stored===0||stored>0)?stored:DEFAULT_LIMITS[key];
+}
+function limitTxt(key){
+  const v=getLimit(key);
+  return v===0?'sin límite':'máx. '+v;
+}
 const AREAS=['Trabajo','Hábitos','Proyectos','Estudio','Salud'];
 const DOW_LABELS=['L','M','X','J','V'];
 const DAY_SHORT=['Lun','Mar','Mié','Jue','Vie'];
@@ -946,11 +1061,12 @@ function load(){
         areas:p.areas||[...AREAS],
         theme:p.theme||defaultTheme(),
         introSeen:!!p.introSeen,
+        limits:p.limits||{...DEFAULT_LIMITS},
         lastModified:p.lastModified||0
       };
     }
   }catch(e){}
-  return {tasks:[],completions:{},areas:[...AREAS],theme:defaultTheme(),introSeen:false};
+  return {tasks:[],completions:{},areas:[...AREAS],theme:defaultTheme(),introSeen:false,limits:{...DEFAULT_LIMITS}};
 }
 function defaultTheme(){
   return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
@@ -1014,7 +1130,10 @@ function finishIntro(){
     document.getElementById('topnav').style.display='block';
     document.getElementById('app').style.display='block';
     applyTheme();
+    const _c=document.getElementById('content');
+    if(_c){ _c.classList.add('first-paint'); setTimeout(()=>_c.classList.remove('first-paint'),500); }
     refresh();
+    renderLimits();
     scrollActive();
   },480);
 }
@@ -1054,6 +1173,7 @@ function dismissSyncScreen(){
 /* ═══ Task logic ═══════════════════════════════════════ */
 function taskAppliesOn(t,iso){
   if(iso<t.start||iso>t.end) return false;
+  if(t.exceptions&&t.exceptions.includes(iso)) return false;
   return t.dow.includes(dowOf(iso));
 }
 function tasksFor(iso,tier){
@@ -1138,7 +1258,7 @@ function renderContent(){
         <div class="tier-title-group">
           <span class="tier-pill ${tier.key}">${tier.label}</span>
         </div>
-        <span class="tier-count${isFull?' full':''}">${doneCount}/${tasks.length||tier.limit}</span>
+        <span class="tier-count${isFull?' full':''}">${doneCount}/${tasks.length||getLimit(tier.key)||'∞'}</span>
       </div>
       <div class="task-list" id="tl-${tier.key}"></div>
       <div class="add-area">
@@ -1362,10 +1482,77 @@ function renderStats(){
 function esc(s){ return s.replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 
 /* ═══ Actions ═══════════════════════════════════════════ */
-function selectDay(iso){ view=iso; refresh(); }
-function shiftWeek(d){ view=addDaysISO(view,d*7); if(dowOf(view)>5) view=mondayISO(view); refresh(); scrollActive(); }
-function goToday(){ view=todayISO(); if(dowOf(view)>5) view=mondayISO(view); refresh(); scrollActive(); }
+let _swapTimer=null;
+function _smoothSwap(fn){
+  const c=document.getElementById('content');
+  if(!c){ fn(); return; }
+  if(_swapTimer) clearTimeout(_swapTimer);
+  c.classList.add('swap-out');
+  _swapTimer=setTimeout(()=>{
+    fn();
+    requestAnimationFrame(()=>{ c.classList.remove('swap-out'); });
+  },120);
+}
+function selectDay(iso){
+  if(iso===view){ return; }
+  _smoothSwap(()=>{ view=iso; refresh(); });
+}
+function shiftWeek(d){ view=addDaysISO(view,d*7); if(dowOf(view)>5) view=mondayISO(view); _smoothSwap(()=>{ refresh(); scrollActive(); }); }
+function goToday(){ const t=todayISO(); const nv=dowOf(t)>5?mondayISO(t):t; if(nv===view) return; _smoothSwap(()=>{ view=nv; refresh(); scrollActive(); }); }
 function refresh(){ renderHeader(); renderRing(); renderDayNav(); renderContent(); if(_lastChange) setTimeout(()=>{ _lastChange=null; },800); }
+
+/* ═══ Limits configuration ═══ */
+function renderLimits(){
+  const g=document.getElementById('limitsGrid');
+  if(!g) return;
+  g.innerHTML=TIERS.map(t=>{
+    const v=getLimit(t.key);
+    const isUnlim=v===0;
+    const valHtml=isUnlim?'<span class="lim-val unlim">∞</span>':`<span class="lim-val">${v}</span>`;
+    return `<div class="limit-row">
+      <span class="limit-dot ${t.key}"></span>
+      <span class="limit-info">
+        <span class="limit-name">${t.label}</span>
+        <span class="limit-hint">${t.desc}</span>
+      </span>
+      <span class="limit-stepper" role="group" aria-label="Límite ${t.label}">
+        <button class="lim-btn" onclick="setLimit('${t.key}',-1)" ${v<=LIMIT_MIN&&!isUnlim?'disabled':''} aria-label="Disminuir">−</button>
+        ${valHtml}
+        <button class="lim-btn" onclick="setLimit('${t.key}',1)" ${v>=LIMIT_MAX?'disabled':''} aria-label="Aumentar">+</button>
+      </span>
+    </div>`;
+  }).join('');
+  updateManualLimits();
+}
+function setLimit(key,delta){
+  if(!S.limits) S.limits={...DEFAULT_LIMITS};
+  let cur=getLimit(key);
+  // Si está en min y bajamos → pasa a "sin límite" (0)
+  if(delta<0&&cur<=LIMIT_MIN){ S.limits[key]=0; }
+  else if(delta>0&&cur===0){ S.limits[key]=LIMIT_MIN; }
+  else { S.limits[key]=Math.max(LIMIT_MIN,Math.min(LIMIT_MAX,cur+delta)); }
+  save();
+  renderLimits();
+  // Refrescar contadores en la vista actual
+  renderContent();
+}
+function resetLimits(){
+  S.limits={...DEFAULT_LIMITS};
+  save();
+  renderLimits();
+  renderContent();
+  toast('Límites restaurados');
+}
+function updateManualLimits(){
+  // Actualiza los textos del manual ("máx. N") en vivo
+  const r=getLimit('r'), y=getLimit('y'), g=getLimit('g');
+  const h1=document.getElementById('manualLimR');
+  const h2=document.getElementById('manualLimY');
+  const h3=document.getElementById('manualLimG');
+  if(h1) h1.textContent=r===0?'Inamovibles — sin límite':`Inamovibles — máx. ${r}`;
+  if(h2) h2.textContent=y===0?'Deseables — sin límite':`Deseables — máx. ${y}`;
+  if(h3) h3.textContent=g===0?'Bonus — sin límite':`Bonus — máx. ${g}`;
+}
 
 function tg(taskId){
   toggleDone(taskId,view);
@@ -1381,7 +1568,7 @@ function tg(taskId){
     const sec=row?.closest('.tier-section');
     const count=sec?.querySelector('.tier-count');
     if(count){
-      count.textContent=`${done}/${tasks.length||TIERS.find(t=>t.key===task.tier).limit}`;
+      count.textContent=`${done}/${tasks.length||getLimit(task.tier)||'∞'}`;
       count.classList.toggle('full',isFull);
     }
   }
@@ -1391,9 +1578,74 @@ function tg(taskId){
 }
 
 let _lastChange=null;
+let _delTaskId=null;
+
 function del(taskId){
   const t=S.tasks.find(x=>x.id===taskId);
   if(!t) return;
+  // Tarea de un solo día → eliminar directo
+  if(t.start===t.end){
+    _delTaskId=taskId;
+    _delAll();
+    return;
+  }
+  // Tarea con rango → mostrar opciones
+  _delTaskId=taskId;
+  const dFrom=document.getElementById('delFrom');
+  const dTo=document.getElementById('delTo');
+  dFrom.min=t.start; dFrom.max=t.end; dFrom.value=view<=t.end&&view>=t.start?view:t.start;
+  dTo.min=t.start; dTo.max=t.end; dTo.value=t.end;
+  document.getElementById('delOptDayDate').textContent=fmtDate(view,{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('delOptAllRange').textContent=
+    fmtDate(t.start,{day:'numeric',month:'short'})+' → '+fmtDate(t.end,{day:'numeric',month:'short'});
+  document.getElementById('delRangeInputs').classList.remove('show');
+  document.getElementById('delModal').classList.add('show');
+}
+
+function closeDelModal(){
+  document.getElementById('delModal').classList.remove('show');
+  _delTaskId=null;
+}
+
+function _delDay(){
+  if(!_delTaskId) return;
+  const t=S.tasks.find(x=>x.id===_delTaskId);
+  if(!t) return;
+  if(!t.exceptions) t.exceptions=[];
+  if(!t.exceptions.includes(view)) t.exceptions.push(view);
+  closeDelModal();
+  save();
+  refresh();
+  toast('Eliminada solo para hoy');
+}
+
+function _delRangeToggle(){
+  document.getElementById('delRangeInputs').classList.toggle('show');
+}
+
+function _delRange(){
+  if(!_delTaskId) return;
+  const t=S.tasks.find(x=>x.id===_delTaskId);
+  if(!t) return;
+  const from=document.getElementById('delFrom').value;
+  const to=document.getElementById('delTo').value;
+  if(!from||!to||from>to){ toast('Fechas inválidas'); return; }
+  if(!t.exceptions) t.exceptions=[];
+  let cur=from;
+  while(cur<=to){
+    if(t.dow.includes(dowOf(cur))&&!t.exceptions.includes(cur)) t.exceptions.push(cur);
+    cur=addDaysISO(cur,1);
+  }
+  closeDelModal();
+  save();
+  refresh();
+  toast('Rango eliminado de la tarea');
+}
+
+function _delAll(){
+  if(!_delTaskId) return;
+  const taskId=_delTaskId;
+  closeDelModal();
   const row=document.querySelector(`.task-card[data-task-id="${taskId}"]`);
   const finish=()=>{
     S.tasks=S.tasks.filter(x=>x.id!==taskId);
@@ -1509,9 +1761,9 @@ function saveTask(tk){
     refresh();
     toast('Tarea actualizada');
   } else {
-    const limit=TIERS.find(t=>t.key===tk).limit;
+    const limit=getLimit(tk);
     const wouldApplyToday=view>=start&&view<=end&&dow.includes(dowOf(view));
-    if(wouldApplyToday&&tasksFor(view,tk).length>=limit){
+    if(limit>0&&wouldApplyToday&&tasksFor(view,tk).length>=limit){
       lim.classList.add('show'); setTimeout(()=>lim.classList.remove('show'),3000); return;
     }
     const task={id:uid(),text,note,area:sel.value,tier:tk,start,end,dow,created:Date.now()};
@@ -1527,7 +1779,7 @@ function saveTask(tk){
 
 /* ═══ Backup ═══════════════════════════════════════════ */
 function doExport(){
-  const data=JSON.stringify({tasks:S.tasks,completions:S.completions,areas:S.areas,theme:S.theme,introSeen:S.introSeen},null,2);
+  const data=JSON.stringify({tasks:S.tasks,completions:S.completions,areas:S.areas,theme:S.theme,introSeen:S.introSeen,limits:S.limits},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1557,9 +1809,10 @@ document.getElementById('fileInput').addEventListener('change',function(e){
         desc:`Se importarán ${taskCount} tarea${taskCount===1?'':'s'}. Esto reemplazará todos tus datos actuales.`,
         okText:'importar',
         onOk:()=>{
-          S=Object.assign({tasks:[],completions:{},areas:[...AREAS],theme:S.theme,introSeen:true},data);
+          S=Object.assign({tasks:[],completions:{},areas:[...AREAS],theme:S.theme,introSeen:true,limits:{...DEFAULT_LIMITS}},data);
           if(!Array.isArray(S.areas)||!S.areas.length) S.areas=[...AREAS];
-          save(); applyTheme(); closeModal(); refresh();
+          if(!S.limits||typeof S.limits!=='object') S.limits={...DEFAULT_LIMITS};
+          save(); applyTheme(); closeModal(); refresh(); renderLimits();
           toast('Datos restaurados correctamente');
         }
       });
@@ -1581,8 +1834,8 @@ function confirmReset(){
     confirmWord:'BORRAR',
     onOk:()=>{
       const keepTheme=S.theme,keepSeen=S.introSeen;
-      S={tasks:[],completions:{},areas:[...AREAS],theme:keepTheme,introSeen:keepSeen};
-      save(); closeModal(); refresh(); toast('Todos los datos fueron borrados');
+      S={tasks:[],completions:{},areas:[...AREAS],theme:keepTheme,introSeen:keepSeen,limits:{...DEFAULT_LIMITS}};
+      save(); closeModal(); refresh(); renderLimits(); toast('Todos los datos fueron borrados');
     }
   });
 }
@@ -1643,7 +1896,7 @@ let _syncTimer=null;
 let _syncBusy=false;
 
 function _syncPayload(){
-  return {tasks:S.tasks,completions:S.completions,areas:S.areas,lastModified:S.lastModified||Date.now()};
+  return {tasks:S.tasks,completions:S.completions,areas:S.areas,limits:S.limits,lastModified:S.lastModified||Date.now()};
 }
 
 function syncSetStatus(st){
@@ -1778,9 +2031,10 @@ async function syncPull(){
       S.tasks=data.tasks;
       S.completions=data.completions||{};
       if(data.areas) S.areas=data.areas;
+      if(data.limits&&typeof data.limits==='object') S.limits=data.limits;
       S.lastModified=remoteTs;
       localStorage.setItem(SK,JSON.stringify(S));
-      refresh();
+      refresh(); renderLimits();
       if(document.getElementById('app').style.display!=='none') toast('Sync: datos actualizados');
     }
     syncSetStatus('on');
@@ -1837,7 +2091,10 @@ if(!S.introSeen){
   document.getElementById('topnav').style.display='block';
   document.getElementById('app').style.display='block';
   applyTheme();
+  const _c=document.getElementById('content');
+  if(_c){ _c.classList.add('first-paint'); setTimeout(()=>_c.classList.remove('first-paint'),500); }
   refresh();
+  renderLimits();
   scrollActive();
 }
 renderSyncUI();
